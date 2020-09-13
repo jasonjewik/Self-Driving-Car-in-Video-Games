@@ -8,6 +8,7 @@ import datetime
 import torch
 import os
 import random
+import cv2
 
 
 try:
@@ -112,7 +113,7 @@ def reshape_x_numpy(
     """
     mean = np.array([0.485, 0.456, 0.406], dtype)
     std = np.array([0.229, 0.224, 0.225], dtype)
-    reshaped = np.zeros((len(data) * 5, 3, 270, 480), dtype=dtype)
+    reshaped = np.zeros((len(data) * 5, 3, data[0][0].shape[0], data[0][0].shape[1]), dtype=dtype)
     for i in range(0, len(data)):
         black_minimap: bool = (random.random() <= hide_map_prob)
         for j in range(0, 5):
@@ -126,7 +127,7 @@ def reshape_x_numpy(
             else:
                 img = np.array(data[i][j], dtype=dtype)
                 if black_minimap:  # Put a black square over the minimap
-                    img[215:, :80] = np.zeros((55, 80, 3), dtype=dtype)
+                    img[140:, :55] = np.zeros((40, 55, 3), dtype=dtype)
 
                 reshaped[i * 5 + j] = np.rollaxis(
                     (img / dtype(255.0)) - mean / std, 2, 0
@@ -155,7 +156,7 @@ def reshape_x_cupy(
 
     mean = cp.array([0.485, 0.456, 0.406], dtype=dtype)
     std = cp.array([0.229, 0.224, 0.225], dtype=dtype)
-    reshaped = np.zeros((len(data) * 5, 3, 270, 480), dtype=dtype)
+    reshaped = np.zeros((len(data) * 5, 3, data[0][0].shape[0], data[0][0].shape[1]), dtype=dtype)
     for i in range(0, len(data)):
         black_minimap: bool = (random.random() <= hide_map_prob)
         for j in range(0, 5):
@@ -169,7 +170,7 @@ def reshape_x_cupy(
             else:
                 img = cp.array(data[i][j], dtype=dtype)
                 if black_minimap:  # Put a black square over the minimap
-                    img[215:, :80] = cp.zeros((55, 80, 3), dtype=dtype)
+                    img[140:, :55] = cp.zeros((40, 55, 3), dtype=dtype)
 
                 reshaped[i * 5 + j] = cp.asnumpy(
                     cp.rollaxis((img / dtype(255.0)) - mean / std, 2, 0,)
@@ -380,7 +381,7 @@ def load_dataset(path: str, fp: int = 16) -> (np.ndarray, np.ndarray):
     files = glob.glob(os.path.join(path, "*.npz"))
     for file_n, file in enumerate(files):
         print(f"Loading file {file_n+1} of {len(files)}...")
-        X_batch, y_batch = load_file(file, fp)
+        X_batch, y_batch = load_file(file, fp, hide_map_prob=1)
         if len(X_batch) > 0 and len(y_batch) > 0:
             if len(X) == 0:
                 X = X_batch
