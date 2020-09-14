@@ -8,7 +8,6 @@ import datetime
 import torch
 import os
 import random
-import cv2
 
 
 try:
@@ -381,7 +380,7 @@ def load_dataset(path: str, fp: int = 16) -> (np.ndarray, np.ndarray):
     files = glob.glob(os.path.join(path, "*.npz"))
     for file_n, file in enumerate(files):
         print(f"Loading file {file_n+1} of {len(files)}...")
-        X_batch, y_batch = load_file(file, fp, hide_map_prob=1)
+        X_batch, y_batch = load_file(file, fp)
         if len(X_batch) > 0 and len(y_batch) > 0:
             if len(X) == 0:
                 X = X_batch
